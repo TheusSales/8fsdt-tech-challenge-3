@@ -17,6 +17,7 @@ Não há login nem comentários — a API atual não expõe esses recursos.
 ## Stack
 
 - **React 18** — hooks e componentes funcionais
+- **React Router 6** — roteamento client-side
 - **TypeScript** — tipagem estática
 - **Vite 5** — bundler e dev server
 - **Styled Components 6** — estilização com tema centralizado
@@ -72,7 +73,8 @@ A organização segue o padrão **separação por responsabilidade**:
   autocomplete em `${({ theme }) => theme.colors.primary}` etc.
 - **`components/`** contém os componentes do design system. São genéricos,
   sem regra de negócio. Cada arquivo exporta um componente.
-- **`pages/`** (a vir) — composição dos componentes em telas inteiras.
+- **`pages/`** — composição dos componentes em telas inteiras. Cada arquivo
+  corresponde a uma rota da aplicação.
 - **`services/`** (a vir) — funções que falam com a API REST. Toda chamada
   HTTP fica encapsulada aqui.
 
@@ -89,8 +91,19 @@ Componentes base em `src/components/`:
   padding responsivo.
 - **`Header`** — header global com brand e links de navegação.
 
-Para visualizar todos os componentes em ação, rode `npm run dev` — a tela
-inicial atual é um "kitchen sink" do design system.
+## Rotas
+
+| Caminho                       | Página       | Descrição                       |
+|-------------------------------|--------------|---------------------------------|
+| `/`                           | `PostsList`  | Lista pública de posts + busca  |
+| `/posts/:id`                  | `PostDetail` | Leitura de um post              |
+| `/admin`                      | `Admin`      | Painel administrativo           |
+| `/admin/posts/novo`           | `PostCreate` | Formulário de criação           |
+| `/admin/posts/:id/editar`     | `PostEdit`   | Formulário de edição            |
+| `*`                           | `NotFound`   | Página 404                      |
+
+As páginas estão como placeholders nesta etapa — usam dados fake. A
+integração real com a API entra na próxima etapa.
 
 ## Wireframes
 
@@ -134,7 +147,7 @@ A base URL é configurável via variável de ambiente `VITE_API_URL`
 - [x] Estrutura inicial com Vite + TypeScript + Styled Components
 - [x] Wireframes das telas
 - [x] Design system base (tokens + componentes essenciais)
-- [ ] Roteamento (React Router) e páginas com placeholders
+- [x] Roteamento (React Router) e páginas com placeholders
 - [ ] Camada de serviços (cliente HTTP da API)
 - [ ] Implementação das telas reais
 - [ ] Responsividade refinada (mobile)

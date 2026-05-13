@@ -1,15 +1,23 @@
+import { Link, useLocation } from 'react-router-dom'
 import styled from 'styled-components'
 
-// Header global da aplicação. Quando entrarmos com React Router, os <a>
-// viram <Link>. Por enquanto são links simples só pra estruturar o layout.
+// Header global. Os links viram NavLink-like via `useLocation` pra marcar
+// qual rota está ativa, sem precisar usar o NavLink do router.
 export function Header() {
+  const { pathname } = useLocation()
+  const isAdmin = pathname.startsWith('/admin')
+
   return (
     <Bar>
       <Inner>
-        <Brand href="/">TECH BLOG</Brand>
+        <Brand to="/">TECH BLOG</Brand>
         <Nav>
-          <NavLink href="/">Posts</NavLink>
-          <NavLink href="/admin">Admin</NavLink>
+          <NavItem to="/" $active={!isAdmin}>
+            Posts
+          </NavItem>
+          <NavItem to="/admin" $active={isAdmin}>
+            Admin
+          </NavItem>
         </Nav>
       </Inner>
     </Bar>
@@ -31,11 +39,12 @@ const Inner = styled.div`
   gap: ${({ theme }) => theme.spacing.md};
 `
 
-const Brand = styled.a`
+const Brand = styled(Link)`
   font-size: ${({ theme }) => theme.fontSizes.lg};
   font-weight: ${({ theme }) => theme.fontWeights.bold};
   color: ${({ theme }) => theme.colors.text};
   letter-spacing: 0.05em;
+  text-decoration: none;
 `
 
 const Nav = styled.nav`
@@ -43,9 +52,13 @@ const Nav = styled.nav`
   gap: ${({ theme }) => theme.spacing.md};
 `
 
-const NavLink = styled.a`
-  color: ${({ theme }) => theme.colors.textMuted};
+const NavItem = styled(Link)<{ $active: boolean }>`
+  color: ${({ theme, $active }) =>
+    $active ? theme.colors.text : theme.colors.textMuted};
   font-size: ${({ theme }) => theme.fontSizes.md};
+  font-weight: ${({ theme, $active }) =>
+    $active ? theme.fontWeights.medium : theme.fontWeights.regular};
+  text-decoration: none;
 
   &:hover {
     color: ${({ theme }) => theme.colors.text};
