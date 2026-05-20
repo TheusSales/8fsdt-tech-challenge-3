@@ -1,49 +1,62 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components'
 import { Card } from '../components/Card'
 import { Container } from '../components/Container'
 import { Input } from '../components/Input'
-
-// Placeholder com 3 posts fake. A integração com a API entra na próxima etapa.
-const FAKE_POSTS = [
-  {
-    id: 1,
-    titulo: 'Introdução ao React',
-    autor: 'Prof. Fulano',
-    descricao:
-      'Conceitos básicos de componentes, props e estado para começar com o pé direito.',
-  },
-  {
-    id: 2,
-    titulo: 'Hooks essenciais',
-    autor: 'Prof. Beltrana',
-    descricao:
-      'useState, useEffect e quando usar cada um — guia prático com exemplos.',
-  },
-  {
-    id: 3,
-    titulo: 'Styled Components na prática',
-    autor: 'Prof. Fulano',
-    descricao:
-      'Como organizar tema, tokens e componentes reutilizáveis em projetos React.',
-  },
-]
+import { useDebounce } from '../hooks/useDebounce'
+import { listPosts, searchPosts } from '../services/posts'
+import type { Post } from '../types/post'
 
 export function PostsList() {
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Termo digitado pelo usuário; o debounced só atualiza depois de 300ms
+  // sem novas teclas, evitando chamadas a cada caractere.
+  const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
+
+  useEffect(() => {
+    setLoading(true)
+    setError(null)
+
+    const promise = debouncedSearch.trim()
+      ? searchPosts(debouncedSearch.trim())
+      : listPosts()
+
+    promise
+      .then(setPosts)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [debouncedSearch])
+
   return (
     <Container>
       <Header>
         <Title>Posts recentes</Title>
-        <Input label="Buscar" placeholder="buscar por palavra-chave..." />
+        <Input
+          label="Buscar"
+          placeholder="buscar por palavra-chave..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+        />
       </Header>
 
+      {loading && <Status>Carregando posts...</Status>}
+      {error && <StatusError>Erro: {error}</StatusError>}
+      {!loading && !error && posts.length === 0 && (
+        <Status>Nenhum post encontrado.</Status>
+      )}
+
       <List>
-        {FAKE_POSTS.map((post) => (
+        {posts.map((post) => (
           <PostCard key={post.id}>
             <PostLink to={`/posts/${post.id}`}>
               <PostTitle>{post.titulo}</PostTitle>
               <PostMeta>por {post.autor}</PostMeta>
-              <PostExcerpt>{post.descricao}</PostExcerpt>
+              <PostExcerpt>{excerpt(post.conteudo)}</PostExcerpt>
               <ReadMore>Ler &gt;</ReadMore>
             </PostLink>
           </PostCard>
@@ -51,6 +64,12 @@ export function PostsList() {
       </List>
     </Container>
   )
+}
+
+// Corta o conteúdo em ~150 caracteres pra mostrar como descrição no card.
+function excerpt(text: string, max = 150) {
+  if (text.length <= max) return text
+  return text.slice(0, max).trimEnd() + '...'
 }
 
 const Header = styled.div`
@@ -63,6 +82,16 @@ const Header = styled.div`
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.fontSizes.xxl};
   color: ${({ theme }) => theme.colors.text};
+`
+
+const Status = styled.p`
+  color: ${({ theme }) => theme.colors.textMuted};
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.lg} 0;
+`
+
+const StatusError = styled(Status)`
+  color: ${({ theme }) => theme.colors.danger};
 `
 
 const List = styled.div`

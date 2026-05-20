@@ -31,12 +31,22 @@ Não há login nem comentários — a API atual não expõe esses recursos.
 
 ## Como rodar
 
-```bash
-npm install
-npm run dev
-```
+1. Suba o back-end da Fase 2 em `http://localhost:3000`.
+2. (Opcional) Copie o arquivo de exemplo de ambiente:
+   ```bash
+   cp .env.example .env
+   ```
+   E ajuste `VITE_API_URL` se a API estiver em outro endereço.
+3. Instale dependências e inicie o dev server:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
 A aplicação fica disponível em `http://localhost:5173`.
+
+> ⚠ Se as chamadas à API falharem com erro de CORS, habilite o CORS no
+> back-end permitindo a origem do front (`http://localhost:5173`).
 
 ## Scripts
 
@@ -75,8 +85,11 @@ A organização segue o padrão **separação por responsabilidade**:
   sem regra de negócio. Cada arquivo exporta um componente.
 - **`pages/`** — composição dos componentes em telas inteiras. Cada arquivo
   corresponde a uma rota da aplicação.
-- **`services/`** (a vir) — funções que falam com a API REST. Toda chamada
-  HTTP fica encapsulada aqui.
+- **`services/`** — funções que falam com a API REST. `api.ts` é um wrapper
+  fino sobre `fetch` (prefixa a base URL, envia JSON, lança em erros HTTP);
+  `posts.ts` exporta uma função por endpoint.
+- **`hooks/`** — hooks customizados (`useDebounce` para a busca).
+- **`types/`** — tipos compartilhados (`Post`, `PostInput`).
 
 ### Design system (atual)
 
@@ -102,8 +115,10 @@ Componentes base em `src/components/`:
 | `/admin/posts/:id/editar`     | `PostEdit`   | Formulário de edição            |
 | `*`                           | `NotFound`   | Página 404                      |
 
-As páginas estão como placeholders nesta etapa — usam dados fake. A
-integração real com a API entra na próxima etapa.
+As páginas consomem os endpoints reais da API. Cada uma trata seus próprios
+estados de `loading` e `error` localmente — não há estado global por
+enquanto, mas há espaço para introduzir Context API se a necessidade
+aparecer.
 
 ## Wireframes
 
@@ -148,8 +163,8 @@ A base URL é configurável via variável de ambiente `VITE_API_URL`
 - [x] Wireframes das telas
 - [x] Design system base (tokens + componentes essenciais)
 - [x] Roteamento (React Router) e páginas com placeholders
-- [ ] Camada de serviços (cliente HTTP da API)
-- [ ] Implementação das telas reais
+- [x] Camada de serviços (cliente HTTP da API)
+- [x] Implementação das telas reais (CRUD + busca)
 - [ ] Responsividade refinada (mobile)
 - [ ] Dockerfile + workflow de CI/CD
 - [ ] Documento de arquitetura final e relato de experiências

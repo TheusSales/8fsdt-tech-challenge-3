@@ -1,29 +1,45 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import styled from 'styled-components'
 import { Container } from '../components/Container'
+import { getPost } from '../services/posts'
+import type { Post } from '../types/post'
 
 export function PostDetail() {
-  // useParams lê os valores definidos na rota (ex: ":id" em /posts/:id).
   const { id } = useParams<{ id: string }>()
+  const [post, setPost] = useState<Post | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!id) return
+    setLoading(true)
+    setError(null)
+    getPost(id)
+      .then(setPost)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [id])
 
   return (
     <Container>
       <BackLink to="/">&lt; Voltar</BackLink>
 
-      <Title>Post #{id} — título do post</Title>
-      <Meta>por Prof. Fulano</Meta>
+      {loading && <Status>Carregando post...</Status>}
+      {error && <StatusError>Erro: {error}</StatusError>}
 
-      <Content>
-        <p>
-          Conteúdo completo do post. Esta é uma página placeholder — quando
-          conectarmos com a API, esse texto vem do endpoint{' '}
-          <code>GET /posts/:id</code>.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua.
-        </p>
-      </Content>
+      {post && (
+        <>
+          <Title>{post.titulo}</Title>
+          <Meta>por {post.autor}</Meta>
+          <Content>
+            {/* O conteúdo é texto simples; renderiza preservando quebras de linha. */}
+            {post.conteudo.split('\n').map((paragrafo, i) => (
+              <p key={i}>{paragrafo}</p>
+            ))}
+          </Content>
+        </>
+      )}
     </Container>
   )
 }
@@ -55,10 +71,13 @@ const Content = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
   line-height: 1.7;
+`
 
-  code {
-    background: ${({ theme }) => theme.colors.surface};
-    padding: 0 ${({ theme }) => theme.spacing.xs};
-    border-radius: ${({ theme }) => theme.radius.sm};
-  }
+const Status = styled.p`
+  color: ${({ theme }) => theme.colors.textMuted};
+  padding: ${({ theme }) => theme.spacing.lg} 0;
+`
+
+const StatusError = styled(Status)`
+  color: ${({ theme }) => theme.colors.danger};
 `

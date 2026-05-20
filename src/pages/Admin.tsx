@@ -1,18 +1,44 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { Button } from '../components/Button'
 import { Card } from '../components/Card'
 import { Container } from '../components/Container'
-
-const FAKE_POSTS = [
-  { id: 1, titulo: 'Introdução ao React', autor: 'Prof. Fulano' },
-  { id: 2, titulo: 'Hooks essenciais', autor: 'Prof. Beltrana' },
-  { id: 3, titulo: 'Styled Components na prática', autor: 'Prof. Fulano' },
-]
+import { deletePost, listPosts } from '../services/posts'
+import type { Post } from '../types/post'
 
 export function Admin() {
-  // useNavigate dá uma função pra navegar de dentro de handlers de eventos.
   const navigate = useNavigate()
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  function refresh() {
+    setLoading(true)
+    setError(null)
+    listPosts()
+      .then(setPosts)
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    refresh()
+  }, [])
+
+  async function handleDelete(post: Post) {
+    // confirm() é a forma mais simples — substituir por um modal próprio depois.
+    const ok = window.confirm(`Excluir o post "${post.titulo}"?`)
+    if (!ok) return
+
+    try {
+      await deletePost(post.id)
+      // Remove localmente pra não precisar recarregar a lista inteira.
+      setPosts((current) => current.filter((p) => p.id !== post.id))
+    } catch (err) {
+      alert(`Falha ao excluir: ${(err as Error).message}`)
+    }
+  }
 
   return (
     <Container>
@@ -23,8 +49,14 @@ export function Admin() {
         </Button>
       </Header>
 
+      {loading && <Status>Carregando posts...</Status>}
+      {error && <StatusError>Erro: {error}</StatusError>}
+      {!loading && !error && posts.length === 0 && (
+        <Status>Nenhum post cadastrado.</Status>
+      )}
+
       <List>
-        {FAKE_POSTS.map((post) => (
+        {posts.map((post) => (
           <Row key={post.id}>
             <RowInfo>
               <RowTitle>{post.titulo}</RowTitle>
@@ -37,21 +69,13 @@ export function Admin() {
               >
                 Editar
               </Button>
-              <Button
-                variant="danger"
-                onClick={() => alert(`Excluir post #${post.id} (placeholder)`)}
-              >
+              <Button variant="danger" onClick={() => handleDelete(post)}>
                 Excluir
               </Button>
             </RowActions>
           </Row>
         ))}
       </List>
-
-      <Hint>
-        Esta é uma listagem placeholder.{' '}
-        <Link to="/">Voltar para a lista pública</Link>.
-      </Hint>
     </Container>
   )
 }
@@ -110,12 +134,12 @@ const RowActions = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
 `
 
-const Hint = styled.p`
-  margin-top: ${({ theme }) => theme.spacing.xl};
+const Status = styled.p`
   color: ${({ theme }) => theme.colors.textMuted};
-  font-size: ${({ theme }) => theme.fontSizes.sm};
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.lg} 0;
+`
 
-  a {
-    color: ${({ theme }) => theme.colors.primary};
-  }
+const StatusError = styled(Status)`
+  color: ${({ theme }) => theme.colors.danger};
 `
