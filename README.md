@@ -157,6 +157,42 @@ Payload de criação/edição:
 A base URL é configurável via variável de ambiente `VITE_API_URL`
 (padrão: `http://localhost:3000`).
 
+## Docker
+
+A aplicação tem um `Dockerfile` *multi-stage*: a primeira etapa usa
+`node:20-alpine` para fazer o build do Vite e a segunda usa `nginx:alpine`
+para servir o `dist/` resultante. O Nginx é configurado com fallback de SPA
+(`try_files $uri /index.html`), então rotas client-side como `/posts/:id` e
+`/admin/posts/novo` continuam funcionando após refresh.
+
+Como `VITE_API_URL` é injetada **em tempo de build** pelo Vite, ela é
+passada via `--build-arg` (com `http://localhost:3000` como padrão):
+
+```bash
+# Build com a URL padrão da API
+docker build -t tech-challenge-3 .
+
+# Build apontando para outro back-end
+docker build \
+  --build-arg VITE_API_URL=https://api.exemplo.com \
+  -t tech-challenge-3 .
+
+# Servir em http://localhost:8080
+docker run --rm -p 8080:80 tech-challenge-3
+```
+
+## CI
+
+O workflow `.github/workflows/ci.yml` roda em todo push e PR para `main`:
+
+1. `npm ci` — instala dependências (com cache do `~/.npm`)
+2. `npx tsc -b` — checagem de tipos
+3. `npm run build` — build do Vite
+4. `docker build` — valida que o `Dockerfile` continua íntegro
+
+Não há testes nem lint configurados ainda; o pipeline existe para garantir
+que o projeto compila e que a imagem Docker continua *buildável*.
+
 ## Roadmap
 
 - [x] Estrutura inicial com Vite + TypeScript + Styled Components
@@ -165,6 +201,6 @@ A base URL é configurável via variável de ambiente `VITE_API_URL`
 - [x] Roteamento (React Router) e páginas com placeholders
 - [x] Camada de serviços (cliente HTTP da API)
 - [x] Implementação das telas reais (CRUD + busca)
+- [x] Dockerfile + workflow de CI/CD
 - [ ] Responsividade refinada (mobile)
-- [ ] Dockerfile + workflow de CI/CD
 - [ ] Documento de arquitetura final e relato de experiências
