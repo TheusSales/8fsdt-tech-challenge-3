@@ -52,8 +52,8 @@ export function PostsList() {
 
       <List>
         {posts.map((post) => (
-          <PostCard key={post.id}>
-            <PostLink to={`/posts/${post.id}`}>
+          <PostCard key={post.idpost}>
+            <PostLink to={`/posts/${post.idpost}`}>
               <PostTitle>{post.titulo}</PostTitle>
               <PostMeta>por {post.autor}</PostMeta>
               <PostExcerpt>{excerpt(post.conteudo)}</PostExcerpt>

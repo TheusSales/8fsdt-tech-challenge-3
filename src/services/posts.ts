@@ -16,12 +16,18 @@ export function searchPosts(termo: string) {
   return request<Post[]>(`/posts/search?q=${encodeURIComponent(termo)}`)
 }
 
-export function createPost(data: PostInput) {
-  return request<Post>('/posts', { method: 'POST', body: data })
+// POST e PUT vêm envelopados como { message, post } — desempacotamos aqui
+// pra que o resto do app receba o Post direto, como nos outros endpoints.
+type PostEnvelope = { message: string; post: Post }
+
+export async function createPost(data: PostInput) {
+  const res = await request<PostEnvelope>('/posts', { method: 'POST', body: data })
+  return res.post
 }
 
-export function updatePost(id: number | string, data: PostInput) {
-  return request<Post>(`/posts/${id}`, { method: 'PUT', body: data })
+export async function updatePost(id: number | string, data: PostInput) {
+  const res = await request<PostEnvelope>(`/posts/${id}`, { method: 'PUT', body: data })
+  return res.post
 }
 
 export function deletePost(id: number | string) {

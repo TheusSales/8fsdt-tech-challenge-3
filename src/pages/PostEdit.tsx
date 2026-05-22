@@ -75,25 +75,30 @@ export function PostEdit() {
 
       <Card>
         {/* defaultValue funciona como pré-preenchimento em form não controlado;
-            a key={post.id} garante remount se o id mudar. */}
-        <Form onSubmit={handleSubmit} key={post.id}>
+            a key={post.idpost} garante remount se o id mudar. */}
+        <Form onSubmit={handleSubmit} key={post.idpost}>
           <Input
             label="Título"
             name="titulo"
             defaultValue={post.titulo}
             required
+            minLength={3}
+            maxLength={255}
           />
           <Input
             label="Autor"
             name="autor"
             defaultValue={post.autor}
             required
+            minLength={2}
+            maxLength={255}
           />
           <Textarea
             label="Conteúdo"
             name="conteudo"
             defaultValue={post.conteudo}
             required
+            maxLength={10000}
           />
 
           {submitError && <ErrorMessage>Erro: {submitError}</ErrorMessage>}

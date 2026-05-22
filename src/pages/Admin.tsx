@@ -32,9 +32,9 @@ export function Admin() {
     if (!ok) return
 
     try {
-      await deletePost(post.id)
+      await deletePost(post.idpost)
       // Remove localmente pra não precisar recarregar a lista inteira.
-      setPosts((current) => current.filter((p) => p.id !== post.id))
+      setPosts((current) => current.filter((p) => p.idpost !== post.idpost))
     } catch (err) {
       alert(`Falha ao excluir: ${(err as Error).message}`)
     }
@@ -57,7 +57,7 @@ export function Admin() {
 
       <List>
         {posts.map((post) => (
-          <Row key={post.id}>
+          <Row key={post.idpost}>
             <RowInfo>
               <RowTitle>{post.titulo}</RowTitle>
               <RowMeta>por {post.autor}</RowMeta>
@@ -65,7 +65,7 @@ export function Admin() {
             <RowActions>
               <Button
                 variant="secondary"
-                onClick={() => navigate(`/admin/posts/${post.id}/editar`)}
+                onClick={() => navigate(`/admin/posts/${post.idpost}/editar`)}
               >
                 Editar
               </Button>

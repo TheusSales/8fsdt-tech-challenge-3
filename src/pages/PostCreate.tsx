@@ -42,13 +42,28 @@ export function PostCreate() {
 
       <Card>
         <Form onSubmit={handleSubmit}>
-          <Input label="Título" name="titulo" placeholder="Título do post" required />
-          <Input label="Autor" name="autor" placeholder="Seu nome" required />
+          <Input
+            label="Título"
+            name="titulo"
+            placeholder="Título do post"
+            required
+            minLength={3}
+            maxLength={255}
+          />
+          <Input
+            label="Autor"
+            name="autor"
+            placeholder="Seu nome"
+            required
+            minLength={2}
+            maxLength={255}
+          />
           <Textarea
             label="Conteúdo"
             name="conteudo"
             placeholder="Escreva o conteúdo do post..."
             required
+            maxLength={10000}
           />
 
           {error && <ErrorMessage>Erro: {error}</ErrorMessage>}

@@ -20,9 +20,16 @@ export async function request<T>(
   })
 
   if (!response.ok) {
-    throw new Error(
-      `Erro ${response.status} ao acessar ${path}: ${response.statusText}`,
-    )
+    // A API devolve erros no formato { "message": "..." }.
+    // Tenta extrair essa mensagem; cai pro statusText se o body não for JSON.
+    let message = response.statusText
+    try {
+      const data = await response.json()
+      if (data && typeof data.message === 'string') message = data.message
+    } catch {
+      // body vazio ou não-JSON — mantém statusText
+    }
+    throw new Error(`Erro ${response.status} ao acessar ${path}: ${message}`)
   }
 
   // Endpoints como DELETE costumam retornar 204 sem corpo.
