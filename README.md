@@ -319,4 +319,3 @@ lados gerarem tipos.
 - [x] Autenticação mockada com `AuthContext` + `PrivateRoute`
 - [x] Responsividade do header (mobile)
 - [x] Documento de arquitetura e relato de experiências (este README)
-- [ ] Substituir auth mockada por JWT real quando o back expuser `/login`
